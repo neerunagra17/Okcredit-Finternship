@@ -1,40 +1,27 @@
 {
   "name": "okcredit-finternship",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "1.0.0",
+  "description": "VoltCommerce is a modern, dynamic e-commerce prototype tailored for the electrical and hardware goods market. It features a unique \"live market\" pricing model where product prices fluctuate daily based on market volatility, and a Merchant Portal that syncs inventory in real-time across the storefront.",
+  "main": "index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && node server.js",
+    "client": "cd frontend && npm run dev",
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install"
   },
-  "dependencies": {
-    "@base-ui/react": "^1.6.0",
-    "@fontsource-variable/geist": "^5.2.9",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^1.21.0",
-    "next-themes": "^0.4.6",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "react-router-dom": "^7.18.0",
-    "recharts": "^3.9.0",
-    "shadcn": "^4.11.0",
-    "sonner": "^2.0.7",
-    "tailwind-merge": "^3.6.0",
-    "tailwindcss-animate": "^1.0.7",
-    "tw-animate-css": "^1.4.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neerunagra17/Okcredit-Finternship.git"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/neerunagra17/Okcredit-Finternship/issues"
+  },
+  "homepage": "https://github.com/neerunagra17/Okcredit-Finternship#readme",
   "devDependencies": {
-    "@types/node": "^26.0.0",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.2",
-    "autoprefixer": "^10.5.1",
-    "oxlint": "^1.69.0",
-    "postcss": "^8.5.15",
-    "tailwindcss": "^3.4.19",
-    "vite": "^8.1.0"
+    "concurrently": "^10.0.3"
   }
 }

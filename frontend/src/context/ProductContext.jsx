@@ -9,7 +9,18 @@ export function ProductProvider({ children }) {
     const saved = localStorage.getItem('voltcommerce_products');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsedSaved = JSON.parse(saved);
+        // Ensure any new products added to mockData.js are merged in, 
+        // without destroying products the user added via Admin Panel.
+        const existingIds = new Set(parsedSaved.map(p => p.id.toString()));
+        const newMocks = mockProducts.filter(p => !existingIds.has(p.id.toString()));
+        
+        if (newMocks.length > 0) {
+          const merged = [...parsedSaved, ...newMocks];
+          localStorage.setItem('voltcommerce_products', JSON.stringify(merged));
+          return merged;
+        }
+        return parsedSaved;
       } catch (e) {
         console.error("Failed to parse local storage products", e);
         return mockProducts;

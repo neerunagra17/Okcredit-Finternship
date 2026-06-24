@@ -6,9 +6,13 @@ const CartContext = createContext();
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
 
-  const addToCart = (item) => {
-    setCart(prev => [...prev, { ...item, cartId: Math.random().toString(36).substr(2, 9) }]);
-    toast.success(`${item.name} added to cart at ₹${item.currentPrice.toFixed(2)}`);
+  const addToCart = (item, quantity = 1) => {
+    const newItems = Array.from({ length: quantity }, () => ({
+      ...item,
+      cartId: Math.random().toString(36).substr(2, 9)
+    }));
+    setCart(prev => [...prev, ...newItems]);
+    toast.success(`${quantity > 1 ? quantity + 'x ' : ''}${item.name} added to cart`);
   };
 
   const removeFromCart = (cartId) => {

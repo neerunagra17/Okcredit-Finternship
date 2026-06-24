@@ -2,7 +2,6 @@ import React from 'react';
 import { useDailyPrices } from '@/hooks/useDailyPrices';
 import { useCart } from '@/context/CartContext';
 import ProductCard from '@/components/product/ProductCard';
-import CartSidebar from '@/components/layout/CartSidebar';
 import { useParams } from 'react-router-dom';
 
 export default function CategoryPage() {
@@ -14,18 +13,22 @@ export default function CategoryPage() {
   const filteredProducts = products.filter(p => {
     if (categoryId === 'wiring') return p.category === 'Wiring';
     if (categoryId === 'switches') return p.category === 'Switches';
+    if (categoryId === 'appliances') return p.category === 'Appliances';
+    if (categoryId === 'lighting') return p.category === 'Lighting';
     return true; // Fallback
   });
 
   const categoryTitles = {
     wiring: 'Wiring & Cables',
-    switches: 'Switches & Outlets'
+    switches: 'Switches & Outlets',
+    appliances: 'Home Appliances',
+    lighting: 'Lighting Solutions'
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="flex-1">
+      <div>
+        <div className="w-full">
           <div className="mb-6">
             <h2 className="text-2xl font-extrabold tracking-tight">{categoryTitles[categoryId] || 'Products'}</h2>
             <p className="text-slate-500 font-medium">Market prices are updated daily at midnight.</p>
@@ -36,20 +39,16 @@ export default function CategoryPage() {
               No products found in this category.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredProducts.map(product => (
                 <ProductCard 
                   key={product.id} 
                   product={product} 
-                  timeLeftUntilTomorrow={timeLeftUntilTomorrow}
-                  onAddToCart={addToCart} 
                 />
               ))}
             </div>
           )}
         </div>
-        
-        <CartSidebar />
       </div>
     </div>
   );

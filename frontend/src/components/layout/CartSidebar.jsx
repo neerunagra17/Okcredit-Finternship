@@ -4,14 +4,15 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { useMarket } from '@/context/MarketContext';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 export default function CartSidebar() {
-  const { cart, removeFromCart, calculateTotal, clearCart } = useCart();
+  const { cart, removeFromCart, calculateTotal } = useCart();
   const { isMarketOpen } = useMarket();
+  const navigate = useNavigate();
 
   const handleCheckout = () => {
-    toast.success("Checkout successful! (Simulated)");
-    clearCart();
+    navigate('/checkout');
   };
 
   return (

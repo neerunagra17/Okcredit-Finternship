@@ -14,6 +14,8 @@ export default function AddProductForm() {
     volatility: '0.05',
     image: '',
     deliveryDate: 'Tomorrow',
+    warranty: '1 Year Warranty',
+    returnPolicy: '30 Day Returns',
     isBestSeller: false
   });
 
@@ -32,6 +34,8 @@ export default function AddProductForm() {
       volatility: parseFloat(formData.volatility),
       image: formData.image,
       deliveryDate: formData.deliveryDate,
+      warranty: formData.warranty,
+      returnPolicy: formData.returnPolicy,
       isBestSeller: formData.isBestSeller
     };
 
@@ -43,7 +47,9 @@ export default function AddProductForm() {
       name: '',
       basePrice: '',
       mrp: '',
-      image: ''
+      image: '',
+      warranty: '1 Year Warranty',
+      returnPolicy: '30 Day Returns'
     });
   };
 
@@ -102,6 +108,7 @@ export default function AddProductForm() {
               <option value="Switches">Switches & Outlets</option>
               <option value="Tools">Tools</option>
               <option value="Lighting">Lighting</option>
+              <option value="Appliances">Appliances</option>
             </select>
           </div>
           <div>
@@ -128,6 +135,29 @@ export default function AddProductForm() {
             value={formData.image}
             onChange={e => setFormData({...formData, image: e.target.value})}
           />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Warranty</label>
+            <input 
+              type="text" 
+              className="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              placeholder="e.g. 1 Year Warranty"
+              value={formData.warranty}
+              onChange={e => setFormData({...formData, warranty: e.target.value})}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Return Policy</label>
+            <input 
+              type="text" 
+              className="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              placeholder="e.g. 30 Day Returns"
+              value={formData.returnPolicy}
+              onChange={e => setFormData({...formData, returnPolicy: e.target.value})}
+            />
+          </div>
         </div>
 
         <div className="flex items-center gap-2 mt-2">

@@ -2,7 +2,6 @@ import React from 'react';
 import { useDailyPrices } from '@/hooks/useDailyPrices';
 import { useCart } from '@/context/CartContext';
 import ProductCard from '@/components/product/ProductCard';
-import CartSidebar from '@/components/layout/CartSidebar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
@@ -29,25 +28,21 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="flex-1">
+      <div>
+        <div className="w-full">
           <div className="mb-6">
             <h2 className="text-2xl font-extrabold tracking-tight">Featured Materials</h2>
             <p className="text-slate-500 font-medium">Market prices are updated daily at midnight.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map(product => (
               <ProductCard 
                 key={product.id} 
                 product={product} 
-                timeLeftUntilTomorrow={timeLeftUntilTomorrow}
-                onAddToCart={addToCart} 
               />
             ))}
           </div>
         </div>
-        
-        <CartSidebar />
       </div>
     </div>
   );

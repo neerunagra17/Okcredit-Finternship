@@ -10,6 +10,10 @@ import CategoryPage from '@/pages/CategoryPage';
 import DealsPage from '@/pages/DealsPage';
 import SupportPage from '@/pages/SupportPage';
 import AdminPage from '@/pages/AdminPage';
+import CheckoutPage from '@/pages/CheckoutPage';
+import ProductPage from '@/pages/ProductPage';
+import LoginPage from '@/pages/LoginPage';
+import SignupPage from '@/pages/SignupPage';
 
 function App() {
   return (
@@ -23,6 +27,10 @@ function App() {
                 <Route path="category/:categoryId" element={<CategoryPage />} />
                 <Route path="deals" element={<DealsPage />} />
                 <Route path="support" element={<SupportPage />} />
+                <Route path="checkout" element={<CheckoutPage />} />
+                <Route path="product/:productId" element={<ProductPage />} />
+                <Route path="login" element={<LoginPage />} />
+                <Route path="signup" element={<SignupPage />} />
               </Route>
               {/* Admin route is completely separate from Layout */}
               <Route path="/admin" element={<AdminPage />} />

@@ -2,7 +2,6 @@ import React from 'react';
 import { useDailyPrices } from '@/hooks/useDailyPrices';
 import { useCart } from '@/context/CartContext';
 import ProductCard from '@/components/product/ProductCard';
-import CartSidebar from '@/components/layout/CartSidebar';
 import { Badge } from '@/components/ui/badge';
 
 export default function DealsPage() {
@@ -22,21 +21,17 @@ export default function DealsPage() {
         </div>
       </div>
       
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="flex-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div>
+        <div className="w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map(product => (
               <ProductCard 
                 key={product.id} 
                 product={product} 
-                timeLeftUntilTomorrow={timeLeftUntilTomorrow}
-                onAddToCart={addToCart} 
               />
             ))}
           </div>
         </div>
-        
-        <CartSidebar />
       </div>
     </div>
   );

@@ -1,22 +1,15 @@
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Clock, Star, StarHalf, Check, Lock } from 'lucide-react';
 import { useMarket } from '@/context/MarketContext';
+import { Link } from 'react-router-dom';
 import ProductPricing from './ProductPricing';
-import ProductAction from './ProductAction';
 
-export default function ProductCard({ product, onAddToCart }) {
+export default function ProductCard({ product }) {
   const { isMarketOpen, timeLeftStr } = useMarket();
   const currentPrice = product.basePrice; 
   const isVolatile = product.volatility > 0;
-
-  const handleAddToCart = () => {
-    if (isMarketOpen) {
-      onAddToCart({ ...product, currentPrice });
-    }
-  };
 
   const renderStars = () => {
     const stars = [];
@@ -36,11 +29,13 @@ export default function ProductCard({ product, onAddToCart }) {
   };
 
   return (
-    <Card className={`flex flex-col h-full overflow-hidden transition-all duration-300 border-slate-200 bg-white/50 backdrop-blur-sm rounded-2xl group ${!isMarketOpen ? 'opacity-90 grayscale-[30%]' : 'hover:shadow-xl hover:border-slate-300'}`}>
+    <Card className={`flex flex-col h-full overflow-hidden transition-all duration-300 border-slate-200 bg-white rounded-2xl group ${!isMarketOpen ? 'opacity-90 grayscale-[30%]' : 'hover:shadow-xl hover:border-slate-300'}`}>
       
       {/* Image Container */}
       <div className="h-56 w-full overflow-hidden bg-white relative border-b border-slate-100 flex items-center justify-center p-4">
-        <img src={product.image} alt={product.name} className={`w-full h-full object-cover rounded-md transition-transform duration-700 ${isMarketOpen ? 'group-hover:scale-105' : ''}`} />
+        <Link to={`/product/${product.id}`} className="w-full h-full block">
+          <img src={product.image} alt={product.name} className={`w-full h-full object-cover rounded-md transition-transform duration-700 ${isMarketOpen ? 'group-hover:scale-105' : ''}`} />
+        </Link>
         
         {product.isBestSeller && isMarketOpen && (
           <div className="absolute top-0 left-0 z-20 bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-br-xl shadow-md">
@@ -51,11 +46,11 @@ export default function ProductCard({ product, onAddToCart }) {
         {isVolatile && (
           <div className="absolute top-2 right-2 z-20">
             {isMarketOpen ? (
-              <Badge variant="secondary" className="bg-blue-100/90 backdrop-blur text-blue-800 shadow-sm border border-blue-200">
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800 shadow-sm border border-blue-200">
                 Today's Market Rate
               </Badge>
             ) : (
-              <Badge variant="secondary" className="bg-slate-800/90 backdrop-blur text-slate-100 shadow-sm border border-slate-700 flex items-center gap-1.5 py-1">
+              <Badge variant="secondary" className="bg-slate-800 text-slate-100 shadow-sm border border-slate-700 flex items-center gap-1.5 py-1">
                 <Lock size={12} /> Market Closed
               </Badge>
             )}
@@ -65,9 +60,11 @@ export default function ProductCard({ product, onAddToCart }) {
 
       <CardContent className="flex-1 flex flex-col p-5 pt-4">
         <div className="mb-3">
-          <CardTitle className="text-lg font-bold leading-snug line-clamp-2 hover:text-blue-600 transition-colors cursor-pointer">
-            {product.name}
-          </CardTitle>
+          <Link to={`/product/${product.id}`}>
+            <CardTitle className="text-lg font-bold leading-snug line-clamp-2 hover:text-blue-600 transition-colors cursor-pointer">
+              {product.name}
+            </CardTitle>
+          </Link>
           <div className="flex items-center gap-1.5 mt-1.5">
             <div className="flex">{renderStars()}</div>
             <span className="text-xs text-blue-600 hover:underline cursor-pointer font-medium">{product.reviews.toLocaleString()}</span>
@@ -116,10 +113,12 @@ export default function ProductCard({ product, onAddToCart }) {
       </CardContent>
       
       <CardFooter className="pt-0 pb-5 px-5">
-        <ProductAction 
-          isMarketOpen={isMarketOpen} 
-          onAddToCart={handleAddToCart} 
-        />
+        <Link 
+          to={`/product/${product.id}`}
+          className="w-full font-bold transition-all duration-200 py-3 flex items-center justify-center text-md rounded-xl shadow-md bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/25 active:scale-[0.98]"
+        >
+          View Product
+        </Link>
       </CardFooter>
     </Card>
   );
