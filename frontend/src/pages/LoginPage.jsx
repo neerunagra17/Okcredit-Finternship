@@ -8,7 +8,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -17,9 +17,25 @@ export default function LoginPage() {
     const success = await login(email, password);
     setIsSubmitting(false);
     if (success) {
-      navigate('/admin'); // Redirect to admin or home
+      // Small delay to ensure AuthContext state is updated
+      setTimeout(() => {
+        window.location.href = '/'; // Will redirect to /admin via AuthContext if needed, but wait, AuthContext doesn't auto redirect. 
+        // Better: login returns true. The component re-renders. 
+        // We can just rely on an effect.
+      }, 100);
     }
   };
+
+  // Redirect based on role when authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [isAuthenticated, isAdmin, navigate]);
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">

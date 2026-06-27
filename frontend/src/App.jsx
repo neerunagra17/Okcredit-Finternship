@@ -15,6 +15,18 @@ import ProductPage from '@/pages/ProductPage';
 import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 
+import { useAuth } from '@/context/AuthContext';
+import { Navigate } from 'react-router-dom';
+
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isAdmin, isLoading } = useAuth();
+  
+  if (isLoading) return <div className="h-screen flex items-center justify-center bg-slate-100">Loading...</div>;
+  if (!isAuthenticated || !isAdmin) return <Navigate to="/login" replace />;
+  
+  return children;
+};
+
 function App() {
   return (
     <ProductProvider>
@@ -33,7 +45,7 @@ function App() {
                 <Route path="signup" element={<SignupPage />} />
               </Route>
               {/* Admin route is completely separate from Layout */}
-              <Route path="/admin" element={<AdminPage />} />
+              <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
             </Routes>
           </BrowserRouter>
           <Toaster position="bottom-right" richColors />

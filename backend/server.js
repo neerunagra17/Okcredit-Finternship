@@ -41,6 +41,13 @@ const requireAuth = async (req, res, next) => {
   const token = authHeader.split(' ')[1];
   try {
     const payload = await verifier.verify(token);
+    
+    // Check Role-Based Access Control (RBAC)
+    const groups = payload['cognito:groups'] || [];
+    if (!groups.includes('Admins')) {
+      return res.status(403).json({ error: "Forbidden: Requires Admin privileges" });
+    }
+
     req.user = payload;
     next();
   } catch (err) {

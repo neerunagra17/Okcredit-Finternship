@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { signUp, signIn, signOut, getCurrentUser, confirmSignUp } from 'aws-amplify/auth';
+import { signUp, signIn, signOut, getCurrentUser, confirmSignUp, fetchAuthSession } from 'aws-amplify/auth';
 import { toast } from 'sonner';
 
 const AuthContext = createContext();
@@ -8,6 +8,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Check auth state on load
   useEffect(() => {
@@ -17,11 +18,16 @@ export function AuthProvider({ children }) {
   const checkUser = async () => {
     try {
       const currentUser = await getCurrentUser();
+      const session = await fetchAuthSession();
+      const groups = session.tokens?.idToken?.payload['cognito:groups'] || [];
+      
       setUser(currentUser);
       setIsAuthenticated(true);
+      setIsAdmin(groups.includes('Admins'));
     } catch (error) {
       setUser(null);
       setIsAuthenticated(false);
+      setIsAdmin(false);
     } finally {
       setIsLoading(false);
     }
@@ -37,16 +43,6 @@ export function AuthProvider({ children }) {
       }
     } catch (error) {
       console.error("AWS Auth Error:", error);
-      
-      // MOCK FALLBACK for development without real AWS backend
-      if (error.name === 'NotAuthorizedException' || error.message.includes('User pool') || error.message.includes('fetch')) {
-        console.warn("Using mock authentication because AWS pool is not configured.");
-        setUser({ username: email, userId: 'mock-id-123' });
-        setIsAuthenticated(true);
-        toast.success(`Mock logged in as ${email}`);
-        return true;
-      }
-      
       toast.error(error.message || "Failed to log in");
       return false;
     }
@@ -66,13 +62,6 @@ export function AuthProvider({ children }) {
       return true;
     } catch (error) {
       console.error("AWS Auth Error:", error);
-      
-      // MOCK FALLBACK
-      if (error.message.includes('User pool') || error.message.includes('fetch')) {
-        console.warn("Using mock signup because AWS pool is not configured.");
-        return true; // pretend it worked
-      }
-      
       toast.error(error.message || "Failed to register");
       return false;
     }
@@ -84,13 +73,6 @@ export function AuthProvider({ children }) {
       return true;
     } catch (error) {
       console.error("AWS Auth Error:", error);
-      
-      // MOCK FALLBACK
-      if (error.message.includes('User pool') || error.message.includes('fetch')) {
-        console.warn("Using mock confirmation because AWS pool is not configured.");
-        return true;
-      }
-      
       toast.error(error.message || "Verification failed");
       return false;
     }
@@ -109,7 +91,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, register, confirmRegister, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isAdmin, isLoading, login, register, confirmRegister, logout }}>
       {children}
     </AuthContext.Provider>
   );

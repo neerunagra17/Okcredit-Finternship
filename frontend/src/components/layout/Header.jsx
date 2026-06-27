@@ -8,7 +8,7 @@ import { LogOut, User } from 'lucide-react';
 
 export default function Header() {
   const { cart } = useCart();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const location = useLocation();
 
   const isActive = (path) => {
@@ -48,11 +48,18 @@ export default function Header() {
           
           {isAuthenticated ? (
             <div className="hidden md:flex items-center gap-3 mr-2 border-r border-slate-200 pr-4">
+              {isAdmin && (
+                <Link to="/admin">
+                  <Button size="sm" variant="outline" className="h-8 text-xs border-blue-200 text-blue-700 hover:bg-blue-50 bg-blue-50/50 hidden lg:flex">
+                    Admin Portal
+                  </Button>
+                </Link>
+              )}
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
                 <div className="w-7 h-7 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center">
                   <User size={14} />
                 </div>
-                <span className="max-w-[100px] truncate">{user?.username || 'Admin'}</span>
+                <span className="max-w-[100px] truncate">{user?.username || 'User'}</span>
               </div>
               <button onClick={logout} className="text-slate-400 hover:text-red-500 transition-colors" title="Sign out">
                 <LogOut size={18} />
