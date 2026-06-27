@@ -6,6 +6,7 @@ const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, ScanCommand, PutCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+const { CognitoJwtVerifier } = require('aws-jwt-verify');
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -23,7 +24,32 @@ const client = new DynamoDBClient({
 const docClient = DynamoDBDocumentClient.from(client);
 const TABLE_NAME = process.env.DYNAMODB_TABLE_PRODUCTS;
 
-// Get all products
+// Configure Cognito JWT Verifier
+const verifier = CognitoJwtVerifier.create({
+  userPoolId: process.env.USER_POOL_ID,
+  tokenUse: "id",
+  clientId: process.env.CLIENT_ID,
+});
+
+// Middleware to protect routes
+const requireAuth = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: "Missing or invalid Authorization header" });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    const payload = await verifier.verify(token);
+    req.user = payload;
+    next();
+  } catch (err) {
+    console.error("Token verification failed:", err);
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+};
+
+// Get all products (Public route)
 app.get('/api/products', async (req, res) => {
   try {
     const data = await docClient.send(new ScanCommand({ TableName: TABLE_NAME }));
@@ -34,8 +60,8 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
-// Add a new product
-app.post('/api/products', async (req, res) => {
+// Add a product (Protected route)
+app.post('/api/products', requireAuth, async (req, res) => {
   try {
     const product = req.body;
     if (!product.id) {
@@ -54,8 +80,8 @@ app.post('/api/products', async (req, res) => {
   }
 });
 
-// Delete a product
-app.delete('/api/products/:id', async (req, res) => {
+// Delete a product (Protected route)
+app.delete('/api/products/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
     await docClient.send(new DeleteCommand({
@@ -77,8 +103,8 @@ const s3Client = new S3Client({
   }
 });
 
-// Generate S3 Pre-signed URL for direct frontend upload
-app.get('/api/upload-url', async (req, res) => {
+// Generate S3 Pre-signed URL for direct frontend upload (Protected route)
+app.get('/api/upload-url', requireAuth, async (req, res) => {
   try {
     const fileName = req.query.fileName;
     const fileType = req.query.fileType;

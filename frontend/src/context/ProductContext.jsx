@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { fetchAuthSession } from 'aws-amplify/auth';
 
 const ProductContext = createContext();
 
@@ -37,9 +38,15 @@ export function ProductProvider({ children }) {
     };
 
     try {
+      const session = await fetchAuthSession();
+      const token = session.tokens?.idToken?.toString();
+      
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(productData)
       });
       
@@ -54,8 +61,14 @@ export function ProductProvider({ children }) {
 
   const deleteProduct = async (id) => {
     try {
+      const session = await fetchAuthSession();
+      const token = session.tokens?.idToken?.toString();
+
       const response = await fetch(`${API_URL}/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       if (!response.ok) throw new Error('Failed to delete product from database');

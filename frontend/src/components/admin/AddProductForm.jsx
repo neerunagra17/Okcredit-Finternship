@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Plus, UploadCloud } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { fetchAuthSession } from 'aws-amplify/auth';
+
 export default function AddProductForm() {
   const { addProduct } = useProducts();
   const [isUploading, setIsUploading] = useState(false);
@@ -41,8 +43,18 @@ export default function AddProductForm() {
       setIsUploading(true);
       toast.info("Uploading image to S3...");
       try {
+        const session = await fetchAuthSession();
+        const token = session.tokens?.idToken?.toString();
+        
         const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/';
-        const res = await fetch(`${baseUrl}api/upload-url?fileName=${encodeURIComponent(selectedFile.name)}&fileType=${encodeURIComponent(selectedFile.type)}`);
+        const res = await fetch(`${baseUrl}api/upload-url?fileName=${encodeURIComponent(selectedFile.name)}&fileType=${encodeURIComponent(selectedFile.type)}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!res.ok) throw new Error("Unauthorized to upload");
+        
         const { uploadUrl, publicUrl } = await res.json();
 
         // Put the file to S3
