@@ -1,72 +1,71 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { mockProducts } from '@/lib/mockData';
 
 const ProductContext = createContext();
 
+const API_URL = 'http://localhost:5001/api/products';
+
 export function ProductProvider({ children }) {
-  // Initialize state from localStorage or fallback to our default mock data
-  const [products, setProducts] = useState(() => {
-    const saved = localStorage.getItem('voltcommerce_products');
-    if (saved) {
-      try {
-        const parsedSaved = JSON.parse(saved);
-        // Ensure any new products added to mockData.js are merged in, 
-        // without destroying products the user added via Admin Panel.
-        const existingIds = new Set(parsedSaved.map(p => p.id.toString()));
-        const newMocks = mockProducts.filter(p => !existingIds.has(p.id.toString()));
-        
-        if (newMocks.length > 0) {
-          const merged = [...parsedSaved, ...newMocks];
-          localStorage.setItem('voltcommerce_products', JSON.stringify(merged));
-          return merged;
-        }
-        return parsedSaved;
-      } catch (e) {
-        console.error("Failed to parse local storage products", e);
-        return mockProducts;
-      }
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(API_URL);
+      if (!response.ok) throw new Error('Failed to fetch products');
+      const data = await response.json();
+      setProducts(data);
+    } catch (err) {
+      console.error("Error loading products from database", err);
+    } finally {
+      setLoading(false);
     }
-    return mockProducts;
-  });
-
-  // Whenever products change, save them back to localStorage
-  useEffect(() => {
-    localStorage.setItem('voltcommerce_products', JSON.stringify(products));
-  }, [products]);
-
-  // Listen for changes from other tabs to sync in real-time
-  useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === 'voltcommerce_products' && e.newValue) {
-        try {
-          setProducts(JSON.parse(e.newValue));
-        } catch (err) {
-          console.error("Failed to sync products across tabs", err);
-        }
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  const addProduct = (newProduct) => {
-    const product = {
-      ...newProduct,
-      id: Math.random().toString(36).substr(2, 9),
-      // Mock history for chart if volatile
-      history: [newProduct.basePrice, newProduct.basePrice * 1.02, newProduct.basePrice * 0.99, newProduct.basePrice * 1.05, newProduct.basePrice],
-      rating: 5.0, // Default for new products
-      reviews: 0,
-    };
-    setProducts(prev => [product, ...prev]);
   };
 
-  const deleteProduct = (id) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const addProduct = async (newProduct) => {
+    const productData = {
+      ...newProduct,
+      id: Math.random().toString(36).substr(2, 9),
+      history: [newProduct.basePrice, newProduct.basePrice * 1.02, newProduct.basePrice * 0.99, newProduct.basePrice * 1.05, newProduct.basePrice],
+      rating: 5.0, 
+      reviews: 0,
+    };
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData)
+      });
+      
+      if (!response.ok) throw new Error('Failed to save product to database');
+      const savedProduct = await response.json();
+      
+      setProducts(prev => [savedProduct, ...prev]);
+    } catch (err) {
+      console.error("Error saving product", err);
+    }
+  };
+
+  const deleteProduct = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete product from database');
+      
+      setProducts(prev => prev.filter(p => p.id !== id));
+    } catch (err) {
+      console.error("Error deleting product", err);
+    }
   };
 
   return (
-    <ProductContext.Provider value={{ products, addProduct, deleteProduct }}>
+    <ProductContext.Provider value={{ products, addProduct, deleteProduct, loading }}>
       {children}
     </ProductContext.Provider>
   );
