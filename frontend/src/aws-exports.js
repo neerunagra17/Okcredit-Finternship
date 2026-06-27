@@ -1,8 +1,8 @@
 const awsmobile = {
     "aws_project_region": "us-east-1",
     "aws_cognito_region": "us-east-1",
-    "aws_user_pools_id": "us-east-1_xxxxxxxxx", // PLACEHOLDER
-    "aws_user_pools_web_client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxx", // PLACEHOLDER
+    "aws_user_pools_id": import.meta.env.VITE_AWS_USER_POOL_ID,
+    "aws_user_pools_web_client_id": import.meta.env.VITE_AWS_USER_POOL_CLIENT_ID,
     "oauth": {},
     "aws_cognito_username_attributes": [
         "EMAIL"
