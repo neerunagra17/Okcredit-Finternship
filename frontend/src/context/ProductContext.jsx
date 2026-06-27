@@ -2,7 +2,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ProductContext = createContext();
 
-const API_URL = 'http://localhost:5001/api/products';
+const API_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}api/products` 
+  : 'http://localhost:5001/api/products';
 
 export function ProductProvider({ children }) {
   const [products, setProducts] = useState([]);

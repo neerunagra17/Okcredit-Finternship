@@ -1,8 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const serverless = require('serverless-http');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, ScanCommand, PutCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -66,6 +69,45 @@ app.delete('/api/products/:id', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Backend server running on port ${port}`);
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  }
 });
+
+// Generate S3 Pre-signed URL for direct frontend upload
+app.get('/api/upload-url', async (req, res) => {
+  try {
+    const fileName = req.query.fileName;
+    const fileType = req.query.fileType;
+    if (!fileName || !fileType) {
+      return res.status(400).json({ error: "fileName and fileType query params are required" });
+    }
+
+    const key = `products/${Date.now()}-${fileName}`;
+    const command = new PutObjectCommand({
+      Bucket: process.env.IMAGE_BUCKET_NAME,
+      Key: key,
+      ContentType: fileType
+    });
+
+    // URL expires in 60 seconds
+    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 60 });
+    const publicUrl = `https://${process.env.IMAGE_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+
+    res.json({ uploadUrl, publicUrl });
+  } catch (err) {
+    console.error("Error generating presigned URL", err);
+    res.status(500).json({ error: "Could not generate upload URL" });
+  }
+});
+
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Backend server running on port ${port}`);
+  });
+}
+
+module.exports.handler = serverless(app);
