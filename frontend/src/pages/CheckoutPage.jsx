@@ -21,22 +21,47 @@ export default function CheckoutPage() {
     cvv: ''
   });
 
-  const handlePlaceOrder = (e) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
     
-    if (!isMarketOpen) {
-      toast.error("Checkout failed. The market has closed.");
-      return;
+    if (!isSubmitting && cart.length > 0) {
+      if (!isMarketOpen) {
+        toast.error("Checkout failed. The market has closed.");
+        return;
+      }
+  
+      setIsSubmitting(true);
+      try {
+        const orderData = {
+          customerInfo: formData,
+          items: cart,
+          total: calculateTotal()
+        };
+  
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(orderData)
+        });
+  
+        if (!response.ok) {
+          throw new Error('Failed to place order');
+        }
+  
+        toast.success("Order placed successfully! Thank you for shopping.");
+        clearCart();
+        navigate('/');
+      } catch (error) {
+        toast.error("An error occurred while placing your order.");
+        console.error(error);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
-
-    if (cart.length === 0) {
-      toast.error("Your cart is empty.");
-      return;
-    }
-
-    toast.success("Order placed successfully! Thank you for shopping.");
-    clearCart();
-    navigate('/');
   };
 
   if (cart.length === 0) {

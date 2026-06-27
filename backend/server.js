@@ -23,6 +23,7 @@ const client = new DynamoDBClient({
 });
 const docClient = DynamoDBDocumentClient.from(client);
 const TABLE_NAME = process.env.DYNAMODB_TABLE_PRODUCTS;
+const ORDERS_TABLE_NAME = process.env.DYNAMODB_TABLE_ORDERS;
 
 // Configure Cognito JWT Verifier
 const verifier = CognitoJwtVerifier.create({
@@ -134,6 +135,38 @@ app.get('/api/upload-url', requireAuth, async (req, res) => {
   } catch (err) {
     console.error("Error generating presigned URL", err);
     res.status(500).json({ error: "Could not generate upload URL" });
+  }
+});
+
+// Create a new order (Public route to allow guest checkout)
+app.post('/api/orders', async (req, res) => {
+  try {
+    const order = req.body;
+    order.orderId = Date.now().toString(); // Generate unique order ID
+    order.timestamp = new Date().toISOString();
+    
+    await docClient.send(new PutCommand({
+      TableName: ORDERS_TABLE_NAME,
+      Item: order
+    }));
+    
+    res.status(201).json({ success: true, orderId: order.orderId });
+  } catch (err) {
+    console.error("Error creating order", err);
+    res.status(500).json({ error: "Could not create order" });
+  }
+});
+
+// Get all orders (Protected route - Admins only)
+app.get('/api/orders', requireAuth, async (req, res) => {
+  try {
+    const data = await docClient.send(new ScanCommand({ TableName: ORDERS_TABLE_NAME }));
+    // Sort by timestamp descending
+    const orders = (data.Items || []).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    res.json(orders);
+  } catch (err) {
+    console.error("Error fetching orders", err);
+    res.status(500).json({ error: "Could not fetch orders" });
   }
 });
 

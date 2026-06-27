@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import AddProductForm from '@/components/admin/AddProductForm';
 import InventoryTable from '@/components/admin/InventoryTable';
+import OrdersTable from '@/components/admin/OrdersTable';
 
 export default function AdminPage() {
   const { isMarketOpen, toggleMarketStatus } = useMarket();
@@ -42,13 +43,19 @@ export default function AdminPage() {
           </Button>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="w-full lg:w-1/3">
-            <AddProductForm />
-          </div>
+        <div className="flex flex-col gap-8">
+          <div className="flex flex-col lg:flex-row gap-8">
+            <div className="w-full lg:w-1/3">
+              <AddProductForm />
+            </div>
 
-          <div className="w-full lg:w-2/3">
-            <InventoryTable />
+            <div className="w-full lg:w-2/3">
+              <InventoryTable />
+            </div>
+          </div>
+          
+          <div className="w-full">
+            <OrdersTable />
           </div>
         </div>
       </main>

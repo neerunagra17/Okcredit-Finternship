@@ -69,6 +69,7 @@ async function deploy() {
       Environment: {
         Variables: {
           DYNAMODB_TABLE_PRODUCTS: process.env.DYNAMODB_TABLE_PRODUCTS,
+          DYNAMODB_TABLE_ORDERS: process.env.DYNAMODB_TABLE_ORDERS,
           IMAGE_BUCKET_NAME: process.env.IMAGE_BUCKET_NAME,
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
         }
@@ -112,6 +113,27 @@ async function deploy() {
     } else {
       console.error("Error creating lambda:", err);
     }
+  }
+
+  // Always update configuration in case env vars changed
+  try {
+    const { UpdateFunctionConfigurationCommand } = require('@aws-sdk/client-lambda');
+    await lambda.send(new UpdateFunctionConfigurationCommand({
+      FunctionName: FUNCTION_NAME,
+      Environment: {
+        Variables: {
+          DYNAMODB_TABLE_PRODUCTS: process.env.DYNAMODB_TABLE_PRODUCTS || 'VoltCommerce_Products',
+          DYNAMODB_TABLE_ORDERS: 'VoltCommerce_Orders',
+          IMAGE_BUCKET_NAME: process.env.IMAGE_BUCKET_NAME || '',
+          USER_POOL_ID: process.env.USER_POOL_ID || '',
+          CLIENT_ID: process.env.CLIENT_ID || '',
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
+        }
+      }
+    }));
+    console.log("Function configuration updated.");
+  } catch (e) {
+    console.error("Error updating config:", e);
   }
 }
 
